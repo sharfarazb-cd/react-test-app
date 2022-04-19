@@ -1,67 +1,50 @@
 
 import './App.css';
 import React from 'react';
+import { useState, useEffect } from 'react';
 import CardList from './components/card-list/card-list.component';
 import SearchBox from './components/search-box/search-box.component';
 import './App.css';
 
-class App extends React.Component {
-  constructor(){
-    console.log('Constructor');
-    super();
-    this.state = {
-     users:[],
-     searchField: ''
-    };
-  }
+const App = () => {
+  const [searchField, setSearchField] = useState('');
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState(users);
+  const onChangeHandler = (event) => {
+    const searchFieldString = event.target.value.toLowerCase();
+    setSearchField(searchFieldString);
+  };
+  console.log('render');
 
-  componentDidMount(){
-    console.log('componentDidMount');
+  useEffect(() => {
+    console.log('effect on filteredUsers')
+    const newFilteredUsers = users.filter( (user) => {
+      return user.name.toLocaleLowerCase().includes(searchField);
+    })
+    setFilteredUsers(newFilteredUsers);
+  }, [users, searchField]);
+
+
+  useEffect(() => {
     fetch("https://jsonplaceholder.typicode.com/users")
     .then((response) => response.json())
-    .then((responseJson) => {
-      this.setState(
-        () => {
-          return { users: responseJson};
-        },
-        () => {
-          console.log(this.state);
-        }
-      )
-    }
-
-    );
-  }
-
-
-  render(){
-    console.log('render');
-    const filteredUsers = this.state.users.filter( (user) => {
-      return user.name.toLocaleLowerCase().includes(this.state.searchField);
-    })
-    const onChangeHandler = (event) => {
-      console.log(event)
-      const searchField = event.target.value.toLowerCase();
-      this.setState(() => {
-        return { searchField }
-      });
-    };
-
-    return (
-      <div className="App">
-        <h1 className='app-title'>Users</h1>
-        <SearchBox
-          className='search-box'
-          placeholder='Search Users'
-          onChangeHandler={onChangeHandler}
-        />
-        <CardList itemList={filteredUsers}/>
-      </div>
-    );
-  }
+    .then((responseJson) => setUsers(responseJson))
+    .then(console.log('effect on Users'))
+  }, []);
 
   
-  
+  return (
+    <div className="App">
+      <h1 className='app-title'>Users</h1>
+      <SearchBox
+        className='search-box'
+        placeholder='Search Users'
+        onChangeHandler={onChangeHandler}
+      />
+      <CardList itemList={filteredUsers}/>
+    </div>
+  );
+
 }
 
 export default App;
